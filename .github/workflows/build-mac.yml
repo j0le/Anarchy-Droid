@@ -21,7 +21,7 @@ jobs:
       run: go get fyne.io/fyne/v2/cmd/fyne
       
     - name: Package (macOS)
-      run: fyne package -release -executable build/anarchy-droid && mkdir pkg && mv anarchy-droid.app pkg/Anarchy-Droid.app
+      run: fyne package -release && mkdir pkg && mv anarchy-droid.app pkg/Anarchy-Droid.app
     
     - uses: actions/upload-artifact@v2
       with:
