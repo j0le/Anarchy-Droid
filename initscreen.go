@@ -8,6 +8,7 @@ import(
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/storage"
 
 	"anarchy-droid/get"
 	"anarchy-droid/device"
@@ -88,8 +89,8 @@ func initApp() (bool, error) {
 		return false, nil
 	}
 
-	cwd, _ := os.Getwd()
-	sentry.CaptureException(fmt.Errorf(cwd))
+	// cwd, _ := os.Getwd()
+	sentry.CaptureException(fmt.Errorf(a.Storage().RootURI().Path()))
 
 	Lbl_init_infotext.Text = "Downloading binaries..."
 	err = get.Binaries()
