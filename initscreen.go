@@ -88,9 +88,6 @@ func initApp() (bool, error) {
 		return false, nil
 	}
 
-	// cwd, _ := os.Getwd()
-	sentry.CaptureException(fmt.Errorf(a.Storage().RootURI().Path()))
-
 	Lbl_init_infotext.Text = "Downloading binaries..."
 	err = get.Binaries()
 	if err != nil {
