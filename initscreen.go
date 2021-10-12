@@ -17,8 +17,6 @@ import(
 	"anarchy-droid/device/heimdall"
 
 	"github.com/creativeprojects/go-selfupdate"
-	
-	"github.com/getsentry/sentry-go"
 
 	"os"
 	"fmt"
