@@ -73,7 +73,7 @@ func main() {
 	// On MacOS, move up the folder structure to move
 	// out of the application content directory
 	if runtime.GOOS == "darwin" {
-		os.Chdir("../..")
+		os.Chdir(a.Storage().RootURI().Path())
 	}
 
 	// Set working directory to a subdir named like the app
