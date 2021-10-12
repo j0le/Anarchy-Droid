@@ -17,6 +17,8 @@ import(
 	"anarchy-droid/device/heimdall"
 
 	"github.com/creativeprojects/go-selfupdate"
+	
+	"github.com/getsentry/sentry-go"
 
 	"os"
 	"fmt"
@@ -85,6 +87,9 @@ func initApp() (bool, error) {
 		Icon_internet.SetResource(theme.CancelIcon())
 		return false, nil
 	}
+
+	cwd, _ := os.Getwd()
+	sentry.CaptureException(fmt.Errorf(cwd))
 
 	Lbl_init_infotext.Text = "Downloading binaries..."
 	err = get.Binaries()
