@@ -58,7 +58,7 @@ func main() {
 	// Set the timeout to the maximum duration the program can afford to wait.
 	defer sentry.Flush(5 * time.Second)
 
-	a = app.New()
+	a = app.NewWithID("com.anarchy-droid")
 	a.SetIcon(resourceIconPng)
 
 	w = a.NewWindow(AppName)
