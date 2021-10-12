@@ -8,7 +8,6 @@ import(
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/storage"
 
 	"anarchy-droid/get"
 	"anarchy-droid/device"
