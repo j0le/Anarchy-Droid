@@ -3,12 +3,14 @@ package main
 import (
 	"os"
 	"time"
+	"strings"
 	"runtime"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 
 	"anarchy-droid/logger"
+	"anarchy-droid/helpers"
 
 	"github.com/getsentry/sentry-go"
 )
@@ -70,10 +72,13 @@ func main() {
 	active_screen = "initScreen"
 	w.SetContent(initScreen())
 
-	// On MacOS, move up the folder structure to move
-	// out of the application content directory
+	// On MacOS, move into the user's Download folder
+	// to prevent being either inside the read-only
+	// application package or inside a jail folder
 	if runtime.GOOS == "darwin" {
-		os.Chdir(a.Storage().RootURI().Path())
+		u, _ := helpers.Cmd("whoami")
+		u = strings.ReplaceAll(u, "\n", "")
+		os.Chdir("/Users/" + u + "/Downloads")
 	}
 
 	// Set working directory to a subdir named like the app
