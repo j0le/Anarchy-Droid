@@ -1,0 +1,4 @@
+
+# Tell git to not change any lineendings (LF <--> CRLF)
+* -text
+.* -text
