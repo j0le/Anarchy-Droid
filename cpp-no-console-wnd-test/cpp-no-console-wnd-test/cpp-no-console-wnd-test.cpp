@@ -3,6 +3,13 @@
 
 #include "framework.h"
 #include "cpp-no-console-wnd-test.h"
+#include <cstdlib>
+#include <bit>
+#include <cstring>
+#include <memory>
+#include <string>
+#include <thread>
+#include <chrono>
 
 #define MAX_LOADSTRING 100
 
@@ -17,6 +24,92 @@ BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
+
+
+void DoConsoleStuff() {
+    bool allocating_console_succeeded = AllocConsole();
+
+    if (!allocating_console_succeeded) {
+        return;
+    }
+
+    HANDLE stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (stdout_handle == INVALID_HANDLE_VALUE) {
+        std::exit(1);
+        return;
+    }
+
+    if (!SetConsoleCP(CP_UTF8)) {
+        std::exit(1);
+        return;
+    }
+    if (!SetConsoleOutputCP(CP_UTF8)) {
+        std::exit(1);
+        return;
+    }
+
+    constexpr char8_t hello_msg[] = u8"Hallöle, was geht denn hier ab?\n";
+
+
+    DWORD written = 0;
+    if (!WriteFile(stdout_handle, hello_msg, sizeof(hello_msg) - 1, &written, nullptr)) {
+        std::exit(1);
+        return;
+    }
+
+    constexpr wchar_t hello_msg_utf16[] = L"Günter sagt: Jetzt nochmal mit UTF-16 U+10437 \U00010437.\n";
+    if (!WriteConsoleW(stdout_handle, hello_msg_utf16, (sizeof(hello_msg_utf16) / sizeof(wchar_t)) - 1, nullptr, nullptr)) {
+        std::exit(1);
+        return;
+    }
+
+    
+
+
+    {
+        STARTUPINFO si{ .cb = sizeof(si) };
+        PROCESS_INFORMATION pi{};
+
+        constexpr wchar_t cmd_line[] = L"cmd.exe";
+        wchar_t cmd_line_mutable[sizeof(cmd_line) / sizeof(wchar_t)];
+        std::memcpy(cmd_line_mutable, cmd_line, sizeof(cmd_line_mutable));
+
+        if (!CreateProcessW(
+            /*[in, optional]      LPCWSTR               lpApplicationName,   */ nullptr, //L"cmd.exe",
+            /*[in, out, optional] LPWSTR                lpCommandLine,       */ cmd_line_mutable,
+            /*[in, optional]      LPSECURITY_ATTRIBUTES lpProcessAttributes, */ nullptr,
+            /*[in, optional]      LPSECURITY_ATTRIBUTES lpThreadAttributes,  */ nullptr,
+            /*[in]                BOOL                  bInheritHandles,     */ true,
+            /*[in]                DWORD                 dwCreationFlags,     */ 0,
+            /*[in, optional]      LPVOID                lpEnvironment,       */ nullptr,
+            /*[in, optional]      LPCWSTR               lpCurrentDirectory,  */ nullptr,
+            /*[in]                LPSTARTUPINFOW        lpStartupInfo,       */ &si,
+            /*[out]               LPPROCESS_INFORMATION lpProcessInformation */ &pi
+        )) {
+            std::exit(1);
+            return;
+        }
+    }
+
+    {
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(3000ms);
+    }
+
+    {
+        HWND console_hwnd = GetConsoleWindow();
+
+        if (console_hwnd == nullptr) {
+            std::exit(1);
+            return;
+        }
+
+        ShowWindow(console_hwnd, SW_HIDE);
+    }
+}
+
+
+
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
@@ -25,7 +118,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: Place code here.
+    DoConsoleStuff();
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -52,8 +145,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
     }
 
+    
+    if (HWND console_hwnd = GetConsoleWindow()) {
+        ShowWindow(console_hwnd, SW_SHOW);
+        using namespace std::chrono_literals;
+        std::this_thread::sleep_for(1000ms);
+        static_cast<void>(SendNotifyMessageW(console_hwnd, WM_CLOSE, 0, 0));
+    }
+    
+
     return (int) msg.wParam;
 }
+
 
 
 
@@ -138,8 +241,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DestroyWindow(hWnd);
                 break;
             case ID_FILE_TEST:
-                return DefWindowProc(hWnd, message, wParam, lParam);
+            {
+                HWND console_hwnd = GetConsoleWindow();
+                if (console_hwnd != nullptr) {
+                    if (!ShowWindow(console_hwnd, SW_HIDE)) {
+                        ShowWindow(console_hwnd, SW_SHOW);
+                    }
+                }
                 break;
+            }
+                
 
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
